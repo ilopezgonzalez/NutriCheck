@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 330" fill="none">
+  <defs>
+    <!-- Espiga de trigo reutilizable -->
+    <g id="trigo">
+      <path d="M0 0V-132" stroke="#e9c46a" stroke-width="4" stroke-linecap="round"/>
+      <g fill="#f4d58d">
+        <ellipse cx="-9" cy="-44" rx="6" ry="12" transform="rotate(-28 -9 -44)"/>
+        <ellipse cx="9" cy="-44" rx="6" ry="12" transform="rotate(28 9 -44)"/>
+        <ellipse cx="-9" cy="-62" rx="6" ry="12" transform="rotate(-28 -9 -62)"/>
+        <ellipse cx="9" cy="-62" rx="6" ry="12" transform="rotate(28 9 -62)"/>
+        <ellipse cx="-9" cy="-80" rx="6" ry="12" transform="rotate(-28 -9 -80)"/>
+        <ellipse cx="9" cy="-80" rx="6" ry="12" transform="rotate(28 9 -80)"/>
+        <ellipse cx="-8" cy="-98" rx="5.5" ry="11" transform="rotate(-28 -8 -98)"/>
+        <ellipse cx="8" cy="-98" rx="5.5" ry="11" transform="rotate(28 8 -98)"/>
+        <ellipse cx="0" cy="-122" rx="5" ry="12"/>
+      </g>
+    </g>
+  </defs>
+
+  <!-- Halo de fondo -->
+  <circle cx="262" cy="206" r="150" fill="#ffffff" fill-opacity="0.07"/>
+  <circle cx="262" cy="206" r="188" stroke="#ffffff" stroke-opacity="0.07" stroke-width="2"/>
+
+  <!-- Interior del bol (parte trasera del borde) -->
+  <ellipse cx="250" cy="198" rx="146" ry="14" fill="#bcd9b0"/>
+
+  <!-- Espigas de trigo -->
+  <use href="#trigo" transform="translate(98 212) rotate(-16)"/>
+  <use href="#trigo" transform="translate(128 214) rotate(-3)" opacity="0.9"/>
+
+  <!-- Hojas de lechuga -->
+  <path d="M128 216 C96 176 118 128 172 122 C204 150 198 196 172 216 Z" fill="#1fa971"/>
+  <path d="M150 196 C152 170 160 150 172 134" stroke="#ffffff" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round"/>
+  <path d="M168 216 C162 168 190 122 238 114 C260 150 250 196 228 216 Z" fill="#a3d977"/>
+  <path d="M206 204 C208 172 216 146 230 128" stroke="#ffffff" stroke-opacity="0.45" stroke-width="3" stroke-linecap="round"/>
+  <path d="M336 216 C326 176 348 142 394 138 C410 168 396 202 376 216 Z" fill="#2fbf86"/>
+  <path d="M362 206 C366 182 376 162 388 148" stroke="#ffffff" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Zanahoria -->
+  <g transform="translate(364 184) rotate(24)">
+    <path d="M0 -72 C-3 -92 -12 -100 -20 -104" stroke="#1fa971" stroke-width="6" stroke-linecap="round"/>
+    <path d="M0 -72 V-108" stroke="#2fbf86" stroke-width="6" stroke-linecap="round"/>
+    <path d="M0 -72 C3 -92 12 -100 20 -104" stroke="#1fa971" stroke-width="6" stroke-linecap="round"/>
+    <path d="M-14 -66 C-14 -75 14 -75 14 -66 L9 22 C7 38 3 54 0 72 C-3 54 -7 38 -9 22 Z" fill="#ff9f43"/>
+    <path d="M-10 -42 H-2 M3 -22 H11 M-9 -2 H-2 M2 18 H8" stroke="#e07b1a" stroke-width="3" stroke-linecap="round"/>
+    <path d="M-8 -64 L-6 10" stroke="#ffffff" stroke-opacity="0.3" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Aguacate (mitad) -->
+  <g transform="translate(222 164) rotate(-8)">
+    <path d="M0 -68 C30 -68 52 -32 54 6 C56 46 30 68 0 68 C-30 68 -56 46 -54 6 C-52 -32 -30 -68 0 -68 Z" fill="#14573c"/>
+    <path d="M0 -60 C26 -60 45 -28 47 6 C49 40 26 60 0 60 C-26 60 -49 40 -47 6 C-45 -28 -26 -60 0 -60 Z" fill="#d6ea97"/>
+    <path d="M0 -50 C22 -50 38 -24 40 6 C42 34 22 52 0 52 C-22 52 -42 34 -40 6 C-38 -24 -22 -50 0 -50 Z" fill="#c4e07a"/>
+    <circle cx="0" cy="14" r="24" fill="#a8643b"/>
+    <circle cx="-8" cy="6" r="7" fill="#c98558"/>
+    <path d="M-34 -18 C-30 -32 -20 -42 -8 -46" stroke="#ffffff" stroke-opacity="0.5" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- Tomate -->
+  <g transform="translate(316 184)">
+    <circle r="40" fill="#e0405f"/>
+    <path d="M-28 -2 C-28 -18 -18 -28 -6 -31" stroke="#ffffff" stroke-opacity="0.5" stroke-width="5" stroke-linecap="round"/>
+    <g fill="#1fa971">
+      <ellipse cx="0" cy="-9" rx="6" ry="15" transform="translate(0 -32) rotate(-72)"/>
+      <ellipse cx="0" cy="-9" rx="6" ry="15" transform="translate(0 -32) rotate(-36)"/>
+      <ellipse cx="0" cy="-9" rx="6" ry="15" transform="translate(0 -32) rotate(0)"/>
+      <ellipse cx="0" cy="-9" rx="6" ry="15" transform="translate(0 -32) rotate(36)"/>
+      <ellipse cx="0" cy="-9" rx="6" ry="15" transform="translate(0 -32) rotate(72)"/>
+    </g>
+    <path d="M0 -34 V-48" stroke="#14573c" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Cuerpo del bol -->
+  <path d="M104 198 C150 224 350 224 396 198 C396 262 344 312 250 312 C156 312 104 262 104 198 Z" fill="#f6f3ea"/>
+  <path d="M107 226 C150 250 350 250 393 226 C390 240 386 250 380 258 C340 276 160 276 120 258 C114 250 110 240 107 226 Z" fill="#1fa971" fill-opacity="0.28"/>
+  <g fill="#1fa971" fill-opacity="0.55">
+    <circle cx="170" cy="250" r="4"/><circle cx="210" cy="258" r="4"/><circle cx="250" cy="261" r="4"/>
+    <circle cx="290" cy="258" r="4"/><circle cx="330" cy="250" r="4"/>
+  </g>
+  <path d="M300 298 C350 284 388 250 396 204 C396 262 344 312 250 312 C270 308 286 304 300 298 Z" fill="#0b3d2a" fill-opacity="0.1"/>
+  <path d="M104 198 C150 224 350 224 396 198" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Naranja (rodaja) delante del bol -->
+  <g transform="translate(82 250)">
+    <circle r="50" fill="#ff9f43"/>
+    <circle r="43" fill="#ffe2bd"/>
+    <g fill="#ffb865">
+      <path d="M0 0 L0 -37 A37 37 0 0 1 32 -18.5 Z"/>
+      <path d="M0 0 L32 -18.5 A37 37 0 0 1 32 18.5 Z"/>
+      <path d="M0 0 L32 18.5 A37 37 0 0 1 0 37 Z"/>
+      <path d="M0 0 L0 37 A37 37 0 0 1 -32 18.5 Z"/>
+      <path d="M0 0 L-32 18.5 A37 37 0 0 1 -32 -18.5 Z"/>
+      <path d="M0 0 L-32 -18.5 A37 37 0 0 1 0 -37 Z"/>
+    </g>
+    <path d="M0 0V-37M0 0L32-18.5M0 0L32 18.5M0 0V37M0 0L-32 18.5M0 0L-32-18.5" stroke="#ffe2bd" stroke-width="3" stroke-linecap="round"/>
+    <circle r="4.5" fill="#ffe2bd"/>
+  </g>
+
+  <!-- Manzana delante del bol -->
+  <g transform="translate(396 268) scale(0.4)">
+    <path d="M0 -34 C-26 -58 -84 -44 -84 14 C-84 70 -40 112 -14 108 C-6 107 0 103 0 103 C0 103 6 107 14 108 C40 112 84 70 84 14 C84 -44 26 -58 0 -34 Z" fill="#a3d977"/>
+    <path d="M-62 4 C-64 -22 -46 -38 -24 -40" stroke="#ffffff" stroke-opacity="0.6" stroke-width="10" stroke-linecap="round"/>
+    <path d="M0 -34 C0 -56 8 -72 22 -84" stroke="#0b3d2a" stroke-opacity="0.6" stroke-width="8" stroke-linecap="round"/>
+    <path d="M22 -76 C36 -102 72 -104 90 -90 C78 -64 46 -56 22 -76 Z" fill="#1fa971"/>
+  </g>
+
+  <!-- Destellos y semillas -->
+  <g fill="#ffffff" fill-opacity="0.7">
+    <path d="M62 120 L65 112 L68 120 L76 123 L68 126 L65 134 L62 126 L54 123 Z"/>
+    <path d="M414 64 L416.5 57 L419 64 L426 66.5 L419 69 L416.5 76 L414 69 L407 66.5 Z"/>
+    <path d="M290 74 L292 69 L294 74 L299 76 L294 78 L292 83 L290 78 L285 76 Z"/>
+  </g>
+  <g fill="#ffffff" fill-opacity="0.4">
+    <circle cx="36" cy="180" r="4"/><circle cx="420" cy="130" r="3.5"/><circle cx="180" cy="82" r="3"/>
+    <circle cx="340" cy="58" r="3"/><circle cx="28" cy="96" r="2.5"/>
+  </g>
+</svg>

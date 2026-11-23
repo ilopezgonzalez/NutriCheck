@@ -1,1 +1,39 @@
-/* You can add global styles to this file, and also import other style files */
+/* Estilos globales · NutriCheck */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: #14281d;
+  background-color: #f6f3ea;
+  background-image:
+    radial-gradient(900px 420px at 8% -8%, rgba(163, 217, 119, 0.35), transparent 70%),
+    radial-gradient(700px 380px at 100% 0%, rgba(255, 183, 94, 0.28), transparent 70%);
+  background-repeat: no-repeat;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+::selection {
+  background: #bfe8a0;
+  color: #0b3d2a;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(31, 169, 113, 0.55);
+  outline-offset: 2px;
+}
