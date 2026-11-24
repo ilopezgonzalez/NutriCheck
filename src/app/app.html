@@ -34,7 +34,12 @@
       }
     </div>
 
-    <div class="chips-alergenos" pistaScroll>
+    <div
+      class="chips-alergenos"
+      pistaScroll
+      [pistaActiva]="!avisoAbierto()"
+      [class.esperando]="avisoAbierto()"
+    >
       @for (item of catalogoAlergenos; track item.tag; let i = $index) {
         <button
           type="button"
@@ -63,7 +68,14 @@
       }
     </div>
 
-    <div class="filtro-tiendas" role="group" aria-label="Filtrar por supermercado" pistaScroll>
+    <div
+      class="filtro-tiendas"
+      role="group"
+      aria-label="Filtrar por supermercado"
+      pistaScroll
+      [pistaActiva]="!avisoAbierto()"
+      [class.esperando]="avisoAbierto()"
+    >
       <span class="filtro-titulo">Supermercado:</span>
       <button
         type="button"

@@ -1,12 +1,25 @@
-import { AfterViewInit, DestroyRef, Directive, ElementRef, inject } from '@angular/core';
+import {
+  AfterViewInit,
+  DestroyRef,
+  Directive,
+  ElementRef,
+  effect,
+  inject,
+  input,
+  signal
+} from '@angular/core';
 
 /**
  * Ayuda visual para filas con scroll horizontal (carruseles de botones):
  *  - Difumina el borde por el que aún hay contenido (variables CSS --fade-izq / --fade-der,
  *    que el CSS usa en un mask-image).
- *  - La primera vez que la fila se ve en pantalla hace un pequeño "empujón" automático
- *    hacia la derecha y vuelve, para que el usuario descubra que se puede desplazar.
- *    Se cancela si el usuario toca la fila y se omite con "reducir movimiento".
+ *  - La primera vez que la fila se ve en pantalla Y la directiva está activa (pistaActiva),
+ *    hace un pequeño "empujón" automático hacia la derecha y vuelve, para que el usuario
+ *    descubra que se puede desplazar. Se cancela si el usuario toca la fila y se omite con
+ *    "reducir movimiento".
+ *
+ * pistaActiva permite retrasar el empujón mientras algo tapa la página (p. ej. la ventana de
+ * aviso inicial): si no, la animación ocurriría detrás y el usuario nunca la vería.
  */
 @Directive({
   selector: '[pistaScroll]',
@@ -16,7 +29,21 @@ export class PistaScroll implements AfterViewInit {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly destroyRef = inject(DestroyRef);
 
+  readonly activa = input<boolean>(true, { alias: 'pistaActiva' });
+  private readonly visible = signal(false);
+  private pistaMostrada = false;
+
   private temporizadores: ReturnType<typeof setTimeout>[] = [];
+
+  constructor() {
+    // Cuando la fila es visible y la directiva está activa, se lanza el empujón (una sola vez)
+    effect(() => {
+      if (this.activa() && this.visible() && !this.pistaMostrada) {
+        this.pistaMostrada = true;
+        this.temporizadores.push(setTimeout(() => this.pista(), 1100));
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
     const el = this.el;
@@ -35,13 +62,11 @@ export class PistaScroll implements AfterViewInit {
     const redimension = new ResizeObserver(actualizar);
     redimension.observe(el);
 
-    let mostrada = false;
     const visibilidad = new IntersectionObserver(
       (entradas) => {
-        if (!mostrada && entradas[0].isIntersecting) {
-          mostrada = true;
+        if (entradas[0].isIntersecting) {
+          this.visible.set(true);
           visibilidad.disconnect();
-          this.temporizadores.push(setTimeout(() => this.pista(), 900));
         }
       },
       { threshold: 0.6 }

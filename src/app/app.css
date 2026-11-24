@@ -805,7 +805,8 @@ h1, h2, h3, h4, p {
   width: 270px;
   height: 202px;
   background: var(--ilustracion-alimentos) no-repeat right bottom / contain;
-  animation: aviso-flota 5s ease-in-out 0.8s infinite;
+  /* Flota suavemente un par de veces al aparecer y se queda quieta (antes era un bucle infinito) */
+  animation: aviso-flota 4s ease-in-out 0.8s 2;
 }
 
 .aviso-sello {
@@ -992,6 +993,8 @@ h1, h2, h3, h4, p {
 }
 
 @media (max-width: 640px) {
+  /* En móvil la ilustración del aviso queda quieta: el movimiento continuo distrae */
+  .aviso-banner::after { animation: none; }
   .aviso-fondo { padding: 14px; }
   .aviso-banner { height: 84px; }
   .aviso-banner::after { width: 170px; height: 128px; bottom: -22px; }
@@ -1511,6 +1514,14 @@ h1, h2, h3, h4, p {
   .chip-tienda {
     animation: chip-entra 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
     animation-delay: calc(var(--i, 0) * 55ms + 150ms);
+  }
+
+  /* Mientras la ventana de aviso está abierta los botones esperan ocultos: así la cascada
+     se ve al cerrarla, en lugar de ocurrir detrás sin que nadie la vea */
+  .esperando .chip,
+  .esperando .chip-tienda {
+    opacity: 0;
+    animation: none;
   }
   .chips-alergenos::-webkit-scrollbar,
   .filtro-tiendas::-webkit-scrollbar { display: none; }
