@@ -22,6 +22,7 @@ export interface OpenFoodProductRaw {
   image_front_small_url?: string;
   image_front_url?: string;
   nutriscore_grade?: string;
+  countries_tags?: string[]; // Países donde se comercializa ('en:spain', 'en:france'...)
   nova_group?: number;
   allergens_tags?: string[];
   traces_tags?: string[];

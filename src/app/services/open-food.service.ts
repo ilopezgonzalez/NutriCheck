@@ -6,8 +6,11 @@ import {
   catchError,
   forkJoin,
   map,
+  merge,
   of,
   retry,
+  shareReplay,
+  switchMap,
   tap,
   throwError,
   timeout,
@@ -32,7 +35,12 @@ export interface ResultadoBusqueda {
   recibidos: number;
   /** Etiquetas de tiendas que no respondieron (solo en búsquedas con varios supermercados) */
   tiendasFallidas?: string[];
+  /** true en el resultado provisional: aún se están buscando coincidencias parciales */
+  ampliando?: boolean;
 }
+
+// Máximo de palabras "ampliadas" (p. ej. gall → galletas) que se buscan además del texto escrito
+const MAX_AMPLIACIONES = 2;
 
 /**
  * @Injectable({ providedIn: 'root' })
@@ -49,8 +57,12 @@ export class OpenFoodService {
   // Endpoints oficiales de Open Food Facts (búsqueda general y producto individual)
   private readonly apiUrl = 'https://world.openfoodfacts.org/cgi/search.pl';
 
-  // Caché en memoria de búsquedas ya realizadas
+  // Servicio de sugerencias de Open Food Facts: busca por prefijo en el catálogo de categorías
+  private readonly sugerenciasUrl = 'https://world.openfoodfacts.org/cgi/suggest.pl';
+
+  // Cachés en memoria: búsquedas ya realizadas y palabras ampliadas por prefijo
   private readonly cacheBusquedas = new Map<string, ResultadoBusqueda>();
+  private readonly cacheAmpliaciones = new Map<string, string[]>();
   private readonly productoUrl = 'https://world.openfoodfacts.org/api/v2/product';
 
   // Lista exacta de claves que queremos descargar. Unirlas con .join(',') crea la cadena
@@ -63,6 +75,7 @@ export class OpenFoodService {
     'image_front_small_url',
     'image_front_url',
     'nutriscore_grade',
+    'countries_tags',
     'nova_group',
     'allergens_tags',
     'traces_tags',
@@ -141,8 +154,11 @@ export class OpenFoodService {
         // Nº de productos que devolvió la API en esta página, antes de descartar los sin nombre
         recibidos: (respuesta.products || []).length,
         productos: (respuesta.products || [])
-          // 1. Filtramos productos incompletos que no tengan nombre ni en español ni general
+          // 1. Filtramos productos incompletos (sin nombre) y los que no se comercializan en
+          //    España. La API ya filtra por país; esto es una segunda garantía por si algún
+          //    producto llegara sin esa etiqueta.
           .filter((item) => Boolean(item.product_name_es?.trim() || item.product_name?.trim()))
+          .filter((item) => !item.countries_tags || item.countries_tags.includes('en:spain'))
           // 2. Transformamos cada producto crudo al formato limpio 'Producto' de nuestra app
           .map((item) => this.normalizarProducto(item))
       })),
@@ -154,6 +170,135 @@ export class OpenFoodService {
         this.cacheBusquedas.set(claveCache, resultado);
       })
     );
+  }
+
+  /**
+   * Búsqueda con coincidencias parciales. La API solo entiende palabras completas ("gall" no
+   * encuentra "galletas"), así que se hace en dos pasos para no perder velocidad:
+   *  1. Emite enseguida los resultados exactos (marcados con ampliando = true).
+   *  2. En paralelo consulta el servicio de sugerencias por prefijo ("gall" → "galletas"),
+   *     busca esas palabras y emite la lista final con las coincidencias añadidas al final.
+   * La lista final conserva el orden del primer paso, así que no "salta" al ampliarse.
+   */
+  buscarConAmpliacion(
+    termino: string,
+    pagina = 1,
+    tamanoPagina = 24,
+    tiendas: string[] = []
+  ): Observable<ResultadoBusqueda> {
+    const tamanoAmpliacion = Math.max(6, Math.ceil(tamanoPagina / 2));
+
+    // shareReplay: la petición exacta se hace una sola vez aunque la usen dos ramas
+    const base$ = this.buscarProductos(termino, pagina, tamanoPagina, tiendas).pipe(shareReplay(1));
+    if (!this.admiteAmpliacion(termino)) return base$;
+
+    // La petición de sugerencias se lanza A LA VEZ que la exacta (no después), para que
+    // sus tiempos de espera no se sumen.
+    const palabras$ = this.obtenerAmpliaciones(termino);
+
+    const completo$ = forkJoin([base$, palabras$]).pipe(
+      switchMap(([base, palabras]) => {
+        if (palabras.length === 0) return of(base);
+
+        return forkJoin(
+          palabras.map((palabra) =>
+            this.buscarProductos(palabra, pagina, tamanoAmpliacion, tiendas).pipe(
+              // Una ampliación que falla no estropea el resultado exacto
+              catchError(() => of(null))
+            )
+          )
+        ).pipe(map((extras) => this.fusionar(base, extras, tamanoAmpliacion, tamanoPagina)));
+      })
+    );
+
+    // Primero el resultado exacto (provisional) y, cuando está todo, el completo
+    return merge(base$.pipe(map((base) => ({ ...base, ampliando: true }))), completo$);
+  }
+
+  // Solo se amplían palabras sueltas de 3 o más letras (con 1-2 letras habría demasiado ruido)
+  private admiteAmpliacion(termino: string): boolean {
+    const limpio = termino.trim();
+    return limpio.length >= 3 && !/\s/.test(limpio);
+  }
+
+  /** Quita tildes y pasa a minúsculas para comparar ("Jamón" → "jamon"). */
+  private normalizar(texto: string): string {
+    return texto.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+  }
+
+  /**
+   * Palabras que empiezan por lo escrito, sacadas del catálogo de categorías de Open Food Facts
+   * ("gall" → ["galletas"]). Si el servicio falla o tarda, simplemente no hay ampliación.
+   */
+  private obtenerAmpliaciones(termino: string): Observable<string[]> {
+    const prefijo = this.normalizar(termino.trim());
+    const enCache = this.cacheAmpliaciones.get(prefijo);
+    if (enCache) return of(enCache);
+
+    const params = new HttpParams()
+      .set('tagtype', 'categories')
+      .set('string', termino.trim())
+      .set('lc', 'es')
+      .set('limit', '12');
+
+    return this.http.get<string[]>(this.sugerenciasUrl, { params }).pipe(
+      // Este servicio tarda entre 2 y 5 s; mientras tanto el usuario ya ve los resultados exactos
+      timeout(12000),
+      map((sugerencias) => this.extraerPalabras(sugerencias, prefijo)),
+      // Solo se cachea el éxito: un fallo puntual no debe "recordarse"
+      tap((palabras) => this.cacheAmpliaciones.set(prefijo, palabras)),
+      catchError(() => of([] as string[]))
+    );
+  }
+
+  // De las sugerencias ("Galletas con nueces", "Galletas crujientes"...) se queda con las
+  // palabras que empiezan por el prefijo y son más largas que él, las más repetidas primero.
+  private extraerPalabras(sugerencias: unknown, prefijo: string): string[] {
+    if (!Array.isArray(sugerencias)) return [];
+
+    const cuenta = new Map<string, number>();
+    for (const sugerencia of sugerencias) {
+      if (typeof sugerencia !== 'string') continue;
+      for (const palabra of sugerencia.split(/[^\p{L}\p{N}]+/u)) {
+        const clave = palabra.toLowerCase();
+        if (clave.length > prefijo.length && this.normalizar(clave).startsWith(prefijo)) {
+          cuenta.set(clave, (cuenta.get(clave) ?? 0) + 1);
+        }
+      }
+    }
+
+    return [...cuenta.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].length - b[0].length)
+      .slice(0, MAX_AMPLIACIONES)
+      .map(([palabra]) => palabra);
+  }
+
+  // Añade al final de la lista exacta los productos de las ampliaciones, sin repetidos
+  private fusionar(
+    base: ResultadoBusqueda,
+    extras: (ResultadoBusqueda | null)[],
+    tamanoAmpliacion: number,
+    tamanoPagina: number
+  ): ResultadoBusqueda {
+    const vistos = new Set(base.productos.map((p) => p.codigo));
+    const productos = [...base.productos];
+    let total = base.total;
+    let hayMas = base.recibidos;
+
+    for (const extra of extras) {
+      if (!extra) continue;
+      total += extra.total; // aproximado: un producto puede contarse en dos palabras
+      // Si alguna ampliación devolvió su página completa, aún hay más páginas que pedir
+      if (extra.recibidos >= tamanoAmpliacion) hayMas = Math.max(hayMas, tamanoPagina);
+      for (const prod of extra.productos) {
+        if (!vistos.has(prod.codigo)) {
+          vistos.add(prod.codigo);
+          productos.push(prod);
+        }
+      }
+    }
+
+    return { ...base, productos, total, recibidos: hayMas, ampliando: false };
   }
 
   /**

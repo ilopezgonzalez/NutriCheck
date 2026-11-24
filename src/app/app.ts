@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { catchError, debounceTime, distinctUntilChanged, map, merge, of, switchMap } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, last, map, merge, of, switchMap } from 'rxjs';
 import {
   CATALOGO_ALERGENOS,
   CATALOGO_SUPERMERCADOS,
@@ -83,6 +83,8 @@ export class App implements OnInit {
   readonly hayMas = signal<boolean>(false);
   readonly cargandoMas = signal<boolean>(false);
   readonly errorMas = signal<string | null>(null);
+  // true mientras se buscan las coincidencias parciales (los resultados exactos ya están en pantalla)
+  readonly ampliando = signal<boolean>(false);
 
   // Supermercados que no respondieron en la última búsqueda múltiple (con su nombre legible)
   private readonly tiendasFallidas = signal<string[]>([]);
@@ -176,7 +178,9 @@ export class App implements OnInit {
           this.hayMas.set(false);
           this.totalApi.set(0);
 
-          return this.openFoodService.buscarProductos(termino, 1, TAMANO_PAGINA, tiendas).pipe(
+          this.ampliando.set(false);
+
+          return this.openFoodService.buscarConAmpliacion(termino, 1, TAMANO_PAGINA, tiendas).pipe(
             catchError((err) => {
               this.error.set(this.openFoodService.mensajeDeError(err));
               return of<ResultadoBusqueda | null>(null);
@@ -190,6 +194,8 @@ export class App implements OnInit {
         this.productos.set(resultado?.productos ?? []);
         this.totalApi.set(resultado?.total ?? 0);
         this.hayMas.set(!!resultado && resultado.recibidos >= TAMANO_PAGINA);
+        // Se emite primero el resultado exacto (ampliando = true) y luego el completo
+        this.ampliando.set(!!resultado?.ampliando);
         this.cargando.set(false);
       });
   }
@@ -206,8 +212,9 @@ export class App implements OnInit {
     this.errorMas.set(null);
 
     this.openFoodService
-      .buscarProductos(termino, siguiente, TAMANO_PAGINA, tiendas)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .buscarConAmpliacion(termino, siguiente, TAMANO_PAGINA, tiendas)
+      // La búsqueda ampliada emite dos veces; para añadir la página solo interesa el resultado final
+      .pipe(last(), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (resultado) => {
           // Si mientras tanto se lanzó otra búsqueda, se descarta esta página

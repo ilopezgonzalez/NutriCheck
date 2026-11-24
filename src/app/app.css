@@ -681,6 +681,23 @@ h1, h2, h3, h4, p {
   text-align: center;
 }
 
+.ampliando {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--menta-suave);
+  color: #0c6b45;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.spinner-verde {
+  border-color: rgba(31, 169, 113, 0.3);
+  border-top-color: var(--menta);
+}
+
 .error-mas {
   padding: 10px 16px;
   border-radius: 12px;

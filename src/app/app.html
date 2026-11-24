@@ -204,6 +204,13 @@
         }
       </p>
 
+      @if (ampliando()) {
+        <p class="ampliando" role="status">
+          <span class="spinner-mini spinner-verde" aria-hidden="true"></span>
+          Buscando también coincidencias parciales...
+        </p>
+      }
+
       @if (avisoTiendasFallidas(); as aviso) {
         <p class="aviso-tiendas" role="status">{{ aviso }}</p>
       }
@@ -213,7 +220,7 @@
       }
 
       @if (hayMas()) {
-        <button type="button" class="btn-cargar-mas" [disabled]="cargandoMas()" (click)="cargarMas()">
+        <button type="button" class="btn-cargar-mas" [disabled]="cargandoMas() || ampliando()" (click)="cargarMas()">
           @if (cargandoMas()) {
             <span class="spinner-mini" aria-hidden="true"></span> Cargando...
           } @else {
